@@ -1,0 +1,30 @@
+README File for Tyree Apps' modifications to OOZWebView (a TapLynx plugin)
+
+Note about UIElements:
+We have included the NavBack.png files as we use those for the back
+button. However, any TapLynx based project should already have the
+NavBack.png loaded.
+
+OOZWebView is implemented to solve a TapLynx problem whereby only a 
+local resource was possible for the About HTML page. The OOZWebView
+lets the developer specify a remote file as well as a local file to
+use when network connectivity is not available.
+
+Please read the OOZreadme for how to implement the plugin.
+
+The Tyree Apps enhancements to OOZWebView allow for the developer
+to specify multiple html files. After clicking on a link, a back
+button appears to help navigation.
+
+Additionally, the logic for how to set the base URL for a local file
+has been changed to account for more cases than the original.
+
+Note:
+For the web pages that are to be local to the iPhone application,
+you must specify the Anchor Tags as relative links such as:
+href="anotherlocalfile.html" or img="localimage.gif"
+
+As always, feedback and improvement suggestions appreciated.
+
+Walter Tyree
+Tyree Apps, LLC
