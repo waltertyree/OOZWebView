@@ -3,6 +3,8 @@
 //
 //  Created by Roberto Brega on 4/19/10.
 //  Copyright 2010 OneOverZero GmbH. All rights reserved.
+//	Modifications by Walter Tyree on July 2010.
+//	Copyright 2010 Tyree Apps, LLC all rights reserved.
 //
 
 #import "OOZWebView.h"
@@ -65,7 +67,7 @@
 	// set titleview
 	self.navigationItem.titleView = self.navControllerTitleView;
 }
-
+// Back button functionality added by TA
 - (void)backOne:(id)sender{
 	if ([webView canGoBack]) {
 		// There's a valid webpage to go back to, so go there
@@ -102,7 +104,7 @@
 
 - (void)viewDidLoad
 {
-	self.webView.delegate = self;
+	self.webView.delegate = self; //Added by TA
 	// set navcontroller backgroundimage (TapLynx compatible)
 	if ((self.navControllerBackgroundImage!=nil) && ([self.navControllerBackgroundImage length]>0)) {
 		[self.navControllerBackgroundImageView setImage:[UIImage imageNamed:self.navControllerBackgroundImage]];
@@ -128,7 +130,7 @@
 		} else {
 			[self displayLocalResource];
 		}
-		//[connection release];
+		
 	} else {
 		[self displayLocalResource];
 	}
@@ -154,17 +156,12 @@
 	}
 	[self.webView setUserInteractionEnabled:self.userInteractionEnabled];
 	[self.webView setScalesPageToFit:YES];
-    // release the connection, and the data object
-   // [connection release];
-   //[receivedData release];
+ 
 
 }
 
 - (void)connection:(NSURLConnection *)connection didFailWithError:(NSError *)error
 {
-    // release the connection, and the data object
-    //[connection release];
-    // receivedData is declared as a method instance elsewhere
    
     // load placeholder
 	[self displayLocalResource];
@@ -185,6 +182,7 @@
 
 - (void)dealloc 
 {
+	//Took the release out of the code above and moved it down here to account for an edge memory leak.
 	[receivedData release];
 	[connection release];
 	// ivars

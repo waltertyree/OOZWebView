@@ -3,6 +3,8 @@
 //
 //  Created by Roberto Brega on 4/19/10.
 //  Copyright 2010 OneOverZero GmbH. All rights reserved.
+//	Modifications by Walter Tyree on July 2010.
+//	Copyright 2010 Tyree Apps, LLC all rights reserved.
 //
 
 #import <Foundation/Foundation.h>
