@@ -3,8 +3,7 @@
 //
 //  Created by Roberto Brega on 4/19/10.
 //  Copyright 2010 OneOverZero GmbH. All rights reserved.
-//	Modifications by Walter Tyree in July 2010.
-//  Copyright 2010 Tyree Apps LLC. All rights reserved
+//
 
 #import "OOZWebView.h"
 
@@ -12,6 +11,7 @@
 
 // ivars
 @synthesize receivedData;
+@synthesize connection;
 @synthesize userInteractionEnabled;
 @synthesize resourceFilename;
 @synthesize resourceURL;
@@ -65,7 +65,7 @@
 	// set titleview
 	self.navigationItem.titleView = self.navControllerTitleView;
 }
-// Back button functionality added by TA
+
 - (void)backOne:(id)sender{
 	if ([webView canGoBack]) {
 		// There's a valid webpage to go back to, so go there
@@ -77,20 +77,21 @@
 		// if a remote url is specified, try to fetch 
 		if ((self.resourceURL!=nil) && ([self.resourceURL length]>0)) {
 			NSURLRequest *request=[NSURLRequest requestWithURL:[NSURL URLWithString:self.resourceURL]];
-			NSURLConnection *connection=[[NSURLConnection alloc] initWithRequest:request delegate:self];
-			if (connection) {
+			NSURLConnection *tempConnection=[[NSURLConnection alloc] initWithRequest:request delegate:self];
+			self.connection = tempConnection;
+			[tempConnection release];
+			if (self.connection != nil) {
 				self.receivedData = [[NSMutableData data] retain];
 			} else {
 				[self displayLocalResource];
 			}
-			[connection release];
+			
 		} else {
 			[self displayLocalResource];
 		}
 	}
 }
 
-// Modification of localResource checking by TA
 - (void)displayLocalResource
 {
 	
@@ -101,7 +102,7 @@
 
 - (void)viewDidLoad
 {
-	self.webView.delegate = self; //Added by TA
+	self.webView.delegate = self;
 	// set navcontroller backgroundimage (TapLynx compatible)
 	if ((self.navControllerBackgroundImage!=nil) && ([self.navControllerBackgroundImage length]>0)) {
 		[self.navControllerBackgroundImageView setImage:[UIImage imageNamed:self.navControllerBackgroundImage]];
@@ -118,14 +119,16 @@
 	self.navigationItem.titleView = self.navControllerTitleView;
 	// if a remote url is specified, try to fetch 
 	if ((self.resourceURL!=nil) && ([self.resourceURL length]>0)) {
-		NSURLRequest *request=[NSURLRequest requestWithURL:[NSURL URLWithString:self.resourceURL]];
-		NSURLConnection *connection=[[NSURLConnection alloc] initWithRequest:request delegate:self];
-		if (connection) {
+		NSURLRequest *request=[NSURLRequest requestWithURL:[NSURL URLWithString:self.resourceURL]] ;
+		NSURLConnection *tempConnection=[[NSURLConnection alloc] initWithRequest:request delegate:self] ;
+		self.connection = tempConnection;
+		[tempConnection release];
+		if (self.connection != nil) {
 			self.receivedData = [[NSMutableData data] retain];
 		} else {
 			[self displayLocalResource];
 		}
-		[connection release];
+		//[connection release];
 	} else {
 		[self displayLocalResource];
 	}
@@ -150,22 +153,22 @@
 		[self.webView loadData:self.receivedData MIMEType:@"text/html" textEncodingName: @"UTF-8" baseURL:[NSURL URLWithString:self.baseURL]];
 	}
 	[self.webView setUserInteractionEnabled:self.userInteractionEnabled];
+	[self.webView setScalesPageToFit:YES];
     // release the connection, and the data object
-   // [connection release]; Modified by TA. Moved the release so that CLang didn't complain about leaks though it was fine here
-    [receivedData release];
+   // [connection release];
+   //[receivedData release];
 
 }
 
 - (void)connection:(NSURLConnection *)connection didFailWithError:(NSError *)error
 {
     // release the connection, and the data object
-    [connection release];
+    //[connection release];
     // receivedData is declared as a method instance elsewhere
-    [receivedData release];
+   
     // load placeholder
 	[self displayLocalResource];
 }
-//TA added delegate method to check to see if the user clicked a hyperlink so we could show the back button
 #pragma mark -
 #pragma mark UIWebView Delegate
 - (BOOL)webView:(UIWebView *)webView shouldStartLoadWithRequest:(NSURLRequest *)request navigationType:(UIWebViewNavigationType)navigationType{
@@ -182,6 +185,8 @@
 
 - (void)dealloc 
 {
+	[receivedData release];
+	[connection release];
 	// ivars
 	self.resourceFilename = nil;
 	self.resourceURL = nil;
