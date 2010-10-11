@@ -3,7 +3,7 @@
 //
 //  Created by Roberto Brega on 4/19/10.
 //  Copyright 2010 OneOverZero GmbH. All rights reserved.
-//	Modifications by Walter Tyree on July 2010.
+//	Modifications by Walter Tyree in October 2010.
 //	Copyright 2010 Tyree Apps, LLC all rights reserved.
 //
 
@@ -26,6 +26,7 @@
 @synthesize navControllerTitleView;
 @synthesize navControllerBackgroundImageView;
 @synthesize navControllerTitleLabel;
+@synthesize activityIndicator;
 
 #pragma mark -
 #pragma mark Initialize for TapLynx
@@ -96,7 +97,7 @@
 
 - (void)displayLocalResource
 {
-	
+	[activityIndicator stopAnimating]; //Added in October to turn off UIActivity Indicator Spinner
 	NSString *filePath = [[NSBundle mainBundle] pathForResource:[[self.resourceFilename lastPathComponent] stringByDeletingPathExtension] ofType:[self.resourceFilename pathExtension]];
 	NSString* data = [NSString stringWithContentsOfFile:filePath encoding:NSUTF8StringEncoding error:nil];
 	[self.webView loadHTMLString:data baseURL:[NSURL fileURLWithPath:[[NSBundle mainBundle] resourcePath]]];
@@ -104,6 +105,7 @@
 
 - (void)viewDidLoad
 {
+		[activityIndicator startAnimating]; //Added in October to start the UIActivity Indicator Spinner
 	self.webView.delegate = self; //Added by TA
 	// set navcontroller backgroundimage (TapLynx compatible)
 	if ((self.navControllerBackgroundImage!=nil) && ([self.navControllerBackgroundImage length]>0)) {
@@ -148,7 +150,8 @@
 
 - (void)connectionDidFinishLoading:(NSURLConnection *)connection
 {
-    NSLog(@"Succeeded! Received %d bytes of data",[receivedData length]);
+	[activityIndicator stopAnimating]; //TA Added in October to turn off spinner
+   	NSLog(@"Succeeded! Received %d bytes of data",[receivedData length]);
 	if ((self.baseURL==nil) || ([self.baseURL length]==0)) {
 		[self.webView loadData:self.receivedData MIMEType:@"text/html" textEncodingName: @"UTF-8" baseURL:[[NSURL URLWithString:self.resourceURL] baseURL]];
 	} else {
@@ -163,16 +166,23 @@
 - (void)connection:(NSURLConnection *)connection didFailWithError:(NSError *)error
 {
    
-    // load placeholder
+	[activityIndicator stopAnimating]; //TA Added in October to turn off spinner
+    	// load placeholder
 	[self displayLocalResource];
 }
 #pragma mark -
 #pragma mark UIWebView Delegate
+
+//TA added delegate method to check to see if the user clicked a hyperlink so we could show the back button
 - (BOOL)webView:(UIWebView *)webView shouldStartLoadWithRequest:(NSURLRequest *)request navigationType:(UIWebViewNavigationType)navigationType{
 	if (navigationType == UIWebViewNavigationTypeLinkClicked) {
 		backButton.hidden = NO;
+		[activityIndicator startAnimating];
 	}
 	return YES;
+}
+- (void)webViewDidFinishLoad:(UIWebView *)webView {
+	[activityIndicator stopAnimating];
 }
 
 
