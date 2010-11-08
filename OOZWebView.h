@@ -9,8 +9,10 @@
 
 #import <Foundation/Foundation.h>
 #import <UIKit/UIKit.h>
+#import <MessageUI/MessageUI.h>
+#import <MessageUI/MFMailComposeViewController.h>
 
-@interface OOZWebView : UIViewController <UIWebViewDelegate>{
+@interface OOZWebView : UIViewController <UIWebViewDelegate,MFMailComposeViewControllerDelegate>{
 	
 	NSMutableData *receivedData;
 	NSURLConnection *connection;
@@ -50,6 +52,8 @@
 -(id)initWithTabInfo:(NSDictionary *)tabInfo topLevelTab:(NSDictionary *)topLevelTab;
 -(IBAction)backOne:(id)sender; //Added by TA
 -(void)displayLocalResource; //Added by TA
+- (void) sendEmailWithSubject:(NSString *)subject body:(NSString *)body to:(NSString *)toPerson cc:(NSString *)ccPerson; //Added to handle Mail
+
 
 @end
 

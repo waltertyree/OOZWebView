@@ -9,6 +9,7 @@
 
 #import "OOZWebView.h"
 
+
 @implementation OOZWebView
 
 // ivars
@@ -46,6 +47,139 @@
 	self.userInteractionEnabled = ![tabInfo objectForKey:@"userInteractionDisabled"];
 	// return self
 	return [self initWithNibName:@"OOZWebView" bundle:nil];
+}
+#pragma mark -
+#pragma mark Handle mailto: links
+// Handling mailto links is extracted from Stephan Burlot's github repo https://github.com/sburlot/browserviewcontroller
+//  Created by Stephan Burlot, Coriolis Technologies, http://www.coriolis.ch on 29.10.09.
+//
+// This work is licensed under the Creative Commons Attribution License.
+// To view a copy of this license, visit http://creativecommons.org/licenses/by/3.0/
+// or send a letter to Creative Commons, 171 Second Street, Suite 300, San Francisco, California, 94105, USA.
+//
+- (void) sendEmailWithSubject:(NSString *)subject body:(NSString *)body to:(NSString *)toPerson cc:(NSString *)ccPerson
+{
+/*	NetworkStatus internetConnectionStatus;
+	NetworkStatus remoteHostStatus;
+	
+	remoteHostStatus         = [[Reachability sharedReachability] remoteHostStatus];
+	internetConnectionStatus = [[Reachability sharedReachability] internetConnectionStatus];
+	if ((internetConnectionStatus == NotReachable) && (remoteHostStatus == NotReachable)) {
+		UIAlertView *alert = [[UIAlertView alloc] initWithTitle:NSLocalizedString(@"Warning", nil)
+														message:NSLocalizedString(@"You have no internet connection.", nil) 
+													   delegate:nil 
+											  cancelButtonTitle:NSLocalizedString(@"OK", nil) 
+											  otherButtonTitles:nil];
+		[alert show];
+		[alert release];
+		return;
+	}
+*/	
+#if	!TARGET_IPHONE_SIMULATOR
+	if (![MFMailComposeViewController canSendMail]) {
+		UIAlertView *alert = [[UIAlertView alloc] initWithTitle:NSLocalizedString(@"Warning", nil)
+														message:NSLocalizedString(@"Your iPhone is not configured to send emails.", nil) 
+													   delegate:nil 
+											  cancelButtonTitle:NSLocalizedString(@"OK", nil) 
+											  otherButtonTitles:nil];
+		[alert show];
+		[alert release];
+		return;
+	}
+#endif
+	
+	MFMailComposeViewController *picker = [[MFMailComposeViewController alloc] init];
+	
+	picker.mailComposeDelegate = self;
+	
+	[picker setToRecipients:[NSArray arrayWithObject:toPerson]];
+	[picker setCcRecipients:[NSArray arrayWithObject:ccPerson]];
+	[picker setSubject:subject];
+	
+	[picker setMessageBody:body isHTML:NO];
+	
+	[self presentModalViewController:picker animated:YES];
+	[picker release];
+}
+
+//==========================================================================================
+// Dismisses the email composition interface when users tap Cancel or Send. Proceeds to update the message field with the result of the operation.
+- (void)mailComposeController:(MFMailComposeViewController*)controller didFinishWithResult:(MFMailComposeResult)result error:(NSError*)error 
+{
+	NSString *alertMessage = nil;
+	// Notifies users about errors associated with the interface
+	switch (result)
+	{
+		case MFMailComposeResultCancelled:
+			break;
+		case MFMailComposeResultSaved:
+			break;
+		case MFMailComposeResultSent:
+			alertMessage = NSLocalizedString(@"Your message has been sent.", nil);
+			break;
+		case MFMailComposeResultFailed:
+			alertMessage = NSLocalizedString(@"Your message could not be sent.", nil);
+			break;
+		default:
+			alertMessage = NSLocalizedString(@"Your message could not be sent.", nil);
+			break;
+	}
+	[self dismissModalViewControllerAnimated:YES];
+	if (alertMessage != nil) {
+		UIAlertView *alert = [[UIAlertView alloc] initWithTitle:NSLocalizedString(@"Sending Email", nil) 
+														message:alertMessage 
+													   delegate:nil 
+											  cancelButtonTitle:NSLocalizedString(@"OK", nil)
+											  otherButtonTitles:nil,nil];
+		[alert show];
+		[alert release];
+	}
+	
+}
+
+//==========================================================================================
+- (void) sendMailWithURL:(NSURL *)url
+{
+	// method to split an url "mailto:sburlot@coriolis.ch?cc=info@coriolis.ch&subject=Hello%20From%20iPhone&body=The message's first paragraph.%0A%0aSecond paragraph.%0A%0AThird Paragraph."
+	// into separate elements
+	
+	NSString *toPerson = @"";
+	NSString *ccPerson = @"";;
+	NSString *subject = @"";
+	NSString *body = @"";
+	
+	NSMutableString *urlString = [NSMutableString stringWithString:[url absoluteString]];
+	[urlString replaceOccurrencesOfString:@"mailto:" withString:@"" options:0 range:NSMakeRange(0, [urlString length])];
+	
+	if ([urlString rangeOfString:@"?"].location != NSNotFound) {
+		toPerson = [[urlString componentsSeparatedByString:@"?"] objectAtIndex:0];
+		NSString *query = [[urlString componentsSeparatedByString:@"?"] objectAtIndex:1];
+		
+		if (query && [query length]) {
+			NSArray *itemsOfURL = [query componentsSeparatedByString:@"&"];
+			for (NSString *queryItem in itemsOfURL) {
+				NSArray *queryElements = [queryItem componentsSeparatedByString:@"="];
+				NSLog(@"queryElements: %@", queryElements);
+				if ([[queryElements objectAtIndex:0] isEqualToString:@"to"])
+					toPerson = [[queryElements objectAtIndex:1] stringByReplacingPercentEscapesUsingEncoding:NSUTF8StringEncoding];
+				if ([[queryElements objectAtIndex:0] isEqualToString:@"cc"])
+					ccPerson = [[queryElements objectAtIndex:1] stringByReplacingPercentEscapesUsingEncoding:NSUTF8StringEncoding];
+				if ([[queryElements objectAtIndex:0] isEqualToString:@"subject"])
+					subject = [[queryElements objectAtIndex:1] stringByReplacingPercentEscapesUsingEncoding:NSUTF8StringEncoding];
+				if ([[queryElements objectAtIndex:0] isEqualToString:@"body"])
+					body = [[queryElements objectAtIndex:1] stringByReplacingPercentEscapesUsingEncoding:NSUTF8StringEncoding];
+			}
+		}
+	} else {
+		toPerson = urlString;
+	}
+	
+	NSLog(@"to: %@", toPerson);
+	NSLog(@"cc: %@", ccPerson);
+	NSLog(@"subject: %@", subject);
+	NSLog(@"body: %@", body);
+	[self sendEmailWithSubject:subject body:body to:toPerson cc:ccPerson];
+	
 }
 
 #pragma mark -
@@ -175,6 +309,14 @@
 
 //TA added delegate method to check to see if the user clicked a hyperlink so we could show the back button
 - (BOOL)webView:(UIWebView *)webView shouldStartLoadWithRequest:(NSURLRequest *)request navigationType:(UIWebViewNavigationType)navigationType{
+	
+	NSURL *url = [request URL];
+	
+	if ([[url scheme] isEqualToString:@"mailto"]) {
+		[self sendMailWithURL:url];
+		return NO;
+	}
+	
 	if (navigationType == UIWebViewNavigationTypeLinkClicked) {
 		backButton.hidden = NO;
 		[activityIndicator startAnimating];
