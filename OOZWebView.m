@@ -93,7 +93,10 @@
 	picker.mailComposeDelegate = self;
 	
 	[picker setToRecipients:[NSArray arrayWithObject:toPerson]];
-	[picker setCcRecipients:[NSArray arrayWithObject:ccPerson]];
+	if ([ccPerson length] != 0) {
+		[picker setCcRecipients:[NSArray arrayWithObject:ccPerson]];
+
+	}
 	[picker setSubject:subject];
 	
 	[picker setMessageBody:body isHTML:NO];
