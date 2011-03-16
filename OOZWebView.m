@@ -238,6 +238,7 @@
 	NSString *filePath = [[NSBundle mainBundle] pathForResource:[[self.resourceFilename lastPathComponent] stringByDeletingPathExtension] ofType:[self.resourceFilename pathExtension]];
 	NSString* data = [NSString stringWithContentsOfFile:filePath encoding:NSUTF8StringEncoding error:nil];
 	[self.webView loadHTMLString:data baseURL:[NSURL fileURLWithPath:[[NSBundle mainBundle] resourcePath]]];
+    [self.webView setScalesPageToFit:YES];
 }
 
 - (void)viewDidLoad
