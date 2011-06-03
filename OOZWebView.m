@@ -44,8 +44,13 @@
 	// cache base URL (new)
 	self.baseURL = [tabInfo objectForKey:@"baseURL"];
 	// cache userteraction enabled (new)
+    if ([tabInfo objectForKey:@"userInteractionDisabled"] != nil)
+    {
 	self.userInteractionEnabled = !![tabInfo objectForKey:@"userInteractionDisabled"];
-	// return self
+	} else {
+        [self setUserInteractionEnabled:YES];
+    }
+    // return self
 	return [self initWithNibName:@"OOZWebView" bundle:nil];
 }
 #pragma mark -
