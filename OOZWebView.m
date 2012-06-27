@@ -195,6 +195,7 @@
 
 - (void)viewWillAppear:(BOOL)animated
 {
+    [self.navigationItem setHidesBackButton:YES animated:YES];
 	// set navcontroller backgroundimage (TapLynx compatible)
 	if ((self.navControllerBackgroundImage!=nil) && ([self.navControllerBackgroundImage length]>0)) {
 		[self.navControllerBackgroundImageView setImage:[UIImage imageNamed:self.navControllerBackgroundImage]];
@@ -209,6 +210,10 @@
 	}
 	// set titleview
 	self.navigationItem.titleView = self.navControllerTitleView;
+}
+
+-(void)viewWillDisappear:(BOOL)animated{
+    [self.navigationItem setHidesBackButton:NO animated:YES];
 }
 // Back button functionality added by TA
 - (void)backOne:(id)sender{
